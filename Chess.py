@@ -6,6 +6,9 @@ class Chess:
         self.boardInterface = boardInterface
         self.gameFormat = gameFormat
         self.timerFormat = timerFormat
+        # Dictionnary of chess coordinates to matrix coodinates
+            # Letters : x axis (a1 = [0][0], h1 = [7][0])
+            # Numbers : y axis (a1 = [0][0], a8 = [0][7])
         self.lnmc = {
             'a': {
                 1:self.boardContent[0][0],
@@ -90,20 +93,29 @@ class Chess:
         }
 
     def start_game(self):
+        """
+        Declaring players and which pieces they control, 
+        with the player controlling white pieces starting.
+        """
         self.board = Board()
 
 # Piece color correspondance : 0 = blacks, 1 = whites
-# Declaring players and which pieces they control, with the whites controlling
-#   player starting.
-        current_player = 0
         player1 = Player(color=1)
         player2 = Player(color=0)
+        current_player = player1
 #       self.boardinterface.mainloop()
 
-# Dictionnary of chess coordinates to matrix coodinates
-# Letters : x axis (a1 = [0][0], h1 = [7][0])
-# Numbers : y axis (a1 = [0][0], a8 = [0][7])
     def l_n_m_c(self, letter, number):
+        """
+        [summary]
+
+        Args:
+            letter ([type]): [description]
+            number ([type]): [description]
+
+        Returns:
+            [type]: [description]
+        """
         return self.lnmc[letter][number]
 
     def check_square(self):
@@ -115,6 +127,7 @@ class Player(Chess):
         self.color = color
 # Intended for timer dependant game, might be reworked
         self.timer = timer
+        self.taken_pieces = []
 
 
 class Board(Chess):
@@ -122,6 +135,7 @@ class Board(Chess):
         super.__init__(self)
 
     def init_board(self):
+        """[summary]"""
         board_array = []
 
         for length in range(8):
@@ -167,10 +181,12 @@ class Board(Chess):
 
 
 class Piece(Chess):
-    def __init__(self, has_moved = False, symbol = "X", color = -1):
+    def __init__(self, has_moved = False, symbol = "X", 
+                color = -1, taken = False):
         self.has_moved = has_moved
         self.symbol = symbol
         self.color = color
+        self.taken = taken
 
     # Move
         # if piece passes through a piece, ally or enemy = illegal
@@ -183,19 +199,24 @@ class Piece(Chess):
         #? () Interface : Display legal moves and takes by color
 
     def move_piece(self, letter, number, available_positions):
+
         if self.l_n_m_c(letter, number) not in available_positions:
             return "This piece cannot be moved here."
+
         elif self.l_n_m_c(letter, number) in available_positions:
             if type(self.l_n_m_c(letter, number)) != None:
-                self.l_n_m_c(letter, number)
+                current_player.taken_pieces.append(
+                    self.l_n_m_c(letter, number)
+                    )
+                self.l_n_m_c(letter, number) = self
+                
         if not self.has_moved:
             self.has_moved = True
 
 class King(Piece):
     # Move pattern : [i][i+1], [i+1][i], [i+1][i+1], [i-1][i+1],
     # [i+1][i-1], [i-1][i], [i][i-1], [i-1][i-1]
-    def __init__(
-                self, has_moved = False, 
+    def __init__(self, has_moved = False, 
                 symbol = "X", color = -1):
         super().__init__(has_moved, symbol, color)
 
